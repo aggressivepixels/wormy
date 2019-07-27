@@ -5,6 +5,7 @@ import Browser.Events
 import Html exposing (Html)
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
+import NonEmptyList exposing (NonEmptyList)
 import Random exposing (Generator)
 import Set exposing (Set)
 import Svg exposing (Svg)
@@ -116,8 +117,7 @@ type alias Model =
     , elapsed : Float
     , timer : Float
     , fps : Float
-    , wormHead : Cell
-    , wormTail : List Cell
+    , worm : NonEmptyList Cell
     , food : Maybe Cell
     , direction : Direction
     , targetDirection : Direction
@@ -133,8 +133,7 @@ initialModel =
     , elapsed = 0
     , timer = 0
     , fps = 1000 / 10
-    , wormHead = Cell 4 1
-    , wormTail = [ Cell 3 1, Cell 2 1, Cell 1 1 ]
+    , worm = NonEmptyList.from (Cell 4 1) [ Cell 3 1, Cell 2 1, Cell 1 1 ]
     , food = Nothing
     , direction = Right
     , targetDirection = Right
@@ -248,7 +247,7 @@ view model =
                 , Svg.g []
                     (List.map
                         (fillCell cellBorderWidth wormBorderColor wormColor cellSize)
-                        (model.wormHead :: model.wormTail)
+                        (NonEmptyList.toList model.worm)
                     )
                 ]
             , if not (model.state == Playing) then
@@ -355,8 +354,15 @@ update msg model =
                             |> slither
                 in
                 if
-                    List.any ((==) model_.wormHead) model_.wormTail
-                        || not (inField model_.width model_.height model_.wormHead)
+                    List.any
+                        ((==) (NonEmptyList.head model_.worm))
+                        (NonEmptyList.tail model_.worm)
+                        || not
+                            (inField
+                                model_.width
+                                model_.height
+                                (NonEmptyList.head model_.worm)
+                            )
                 then
                     { model_ | state = Over }
                         |> withNoCmd
@@ -412,7 +418,7 @@ update msg model =
                         |> withCmd (newFood model.width model.height)
 
         NewFood food ->
-            if model.wormHead == food || List.any ((==) food) model.wormTail then
+            if NonEmptyList.any ((==) food) model.worm then
                 model
                     |> withCmd (newFood model.width model.height)
 
@@ -442,7 +448,7 @@ slither model =
             ate =
                 case model.food of
                     Just food ->
-                        model.wormHead == food
+                        NonEmptyList.head model.worm == food
 
                     Nothing ->
                         False
@@ -456,18 +462,20 @@ slither model =
 
                 else
                     model.targetDirection
+
+            head_ =
+                moveCell direction_ (NonEmptyList.head model.worm)
+
+            worm_ =
+                if ate then
+                    NonEmptyList.cons head_ model.worm
+
+                else
+                    model.worm |> NonEmptyList.cons head_ |> NonEmptyList.init
         in
         { model
             | timer = model.timer + model.fps
-            , wormHead = moveCell direction_ model.wormHead
-            , wormTail =
-                model.wormHead
-                    :: (if ate then
-                            model.wormTail
-
-                        else
-                            listInit model.wormTail
-                       )
+            , worm = worm_
             , food =
                 if ate then
                     Nothing
