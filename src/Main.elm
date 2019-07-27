@@ -240,13 +240,13 @@ view model =
                 ]
                 [ case model.food of
                     Just food ->
-                        fillCell cellBorderWidth foodBorderColor foodColor cellSize food
+                        fillCell cellBorderWidth foodBorderColor cellSize foodColor food
 
                     Nothing ->
                         Svg.text ""
                 , Svg.g []
                     (List.map
-                        (fillCell cellBorderWidth wormBorderColor wormColor cellSize)
+                        (fillCell cellBorderWidth wormBorderColor cellSize wormColor)
                         (NonEmptyList.toList model.worm)
                     )
                 ]
@@ -328,8 +328,8 @@ view model =
         ]
 
 
-fillCell : Float -> String -> String -> Float -> Cell -> Svg a
-fillCell strokeWidth strokeColor color size { x, y } =
+fillCell : Float -> String -> Float -> String -> Cell -> Svg a
+fillCell strokeWidth strokeColor size color { x, y } =
     Svg.rect
         [ Svg.Attributes.width <| String.fromFloat size
         , Svg.Attributes.height <| String.fromFloat size
