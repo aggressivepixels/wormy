@@ -120,7 +120,7 @@ type alias Model =
     , wormTail : List Cell
     , food : Maybe Cell
     , direction : Direction
-    , newDirection : Maybe Direction
+    , targetDirection : Direction
     , state : State
     }
 
@@ -137,7 +137,7 @@ initialModel =
     , wormTail = [ Cell 3 1, Cell 2 1, Cell 1 1 ]
     , food = Nothing
     , direction = Right
-    , newDirection = Nothing
+    , targetDirection = Right
     , state = Title
     }
 
@@ -377,7 +377,7 @@ update msg model =
         Move direction ->
             if model.state == Playing then
                 { model
-                    | newDirection = Just direction
+                    | targetDirection = direction
                 }
                     |> withNoCmd
 
@@ -448,19 +448,14 @@ slither model =
                         False
 
             direction_ =
-                case model.newDirection of
-                    Just newDirection ->
-                        if
-                            oppositeDirection model.direction
-                                == newDirection
-                        then
-                            model.direction
+                if
+                    oppositeDirection model.direction
+                        == model.targetDirection
+                then
+                    model.direction
 
-                        else
-                            newDirection
-
-                    Nothing ->
-                        model.direction
+                else
+                    model.targetDirection
         in
         { model
             | timer = model.timer + model.fps
@@ -486,7 +481,7 @@ slither model =
                 else
                     model.score
             , direction = direction_
-            , newDirection = Nothing
+            , targetDirection = direction_
         }
 
     else
