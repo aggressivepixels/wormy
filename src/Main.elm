@@ -116,7 +116,7 @@ type alias Model =
     , score : Int
     , elapsed : Float
     , timer : Float
-    , fps : Float
+    , frameDuration : Float
     , worm : NonEmptyList Cell
     , food : Maybe Cell
     , direction : Direction
@@ -132,7 +132,7 @@ initialModel =
     , score = 0
     , elapsed = 0
     , timer = 0
-    , fps = 1000 / 10
+    , frameDuration = 1000 / 10
     , worm = NonEmptyList.from (Cell 4 1) [ Cell 3 1, Cell 2 1, Cell 1 1 ]
     , food = Nothing
     , direction = Right
@@ -474,7 +474,7 @@ slither model =
                     model.worm |> NonEmptyList.cons head_ |> NonEmptyList.init
         in
         { model
-            | timer = model.timer + model.fps
+            | timer = model.timer + model.frameDuration
             , worm = worm_
             , food =
                 if ate then
