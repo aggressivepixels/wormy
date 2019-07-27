@@ -3,10 +3,12 @@ module Game exposing
     , Direction(..)
     , Game
     , State(..)
+    , canPlaceFood
     , cellGenerator
     , initial
     , isCellInsideField
     , maybeMoveWorm
+    , placeFood
     , updateTime
     , withState
     )
@@ -179,3 +181,15 @@ maybeMoveWorm game =
 
     else
         game
+
+
+canPlaceFood : Cell -> Game -> Bool
+canPlaceFood cell game =
+    NonEmptyList.all ((/=) cell) game.worm
+
+
+placeFood : Cell -> Game -> Game
+placeFood cell game =
+    { game
+        | food = Just cell
+    }

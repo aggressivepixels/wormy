@@ -114,15 +114,14 @@ update msg game =
                         |> withCmd (generateFood game.width game.height)
 
         NewFood food ->
-            if NonEmptyList.any ((==) food) game.worm then
+            if game |> Game.canPlaceFood food then
                 game
-                    |> withCmd (generateFood game.width game.height)
+                    |> Game.placeFood food
+                    |> withNoCmd
 
             else
-                { game
-                    | food = Just food
-                }
-                    |> withNoCmd
+                game
+                    |> withCmd (generateFood game.width game.height)
 
         None ->
             game

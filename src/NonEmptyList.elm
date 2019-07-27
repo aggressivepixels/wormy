@@ -1,6 +1,6 @@
 module NonEmptyList exposing
     ( NonEmptyList
-    , any
+    , all
     , cons
     , from
     , head
@@ -34,13 +34,9 @@ tail (NonEmptyList _ xs) =
     xs
 
 
-any : (a -> Bool) -> NonEmptyList a -> Bool
-any f (NonEmptyList x xs) =
-    if f x then
-        True
-
-    else
-        List.any f xs
+all : (a -> Bool) -> NonEmptyList a -> Bool
+all f (NonEmptyList x xs) =
+    List.all f (x :: xs)
 
 
 init : NonEmptyList a -> NonEmptyList a
