@@ -94,31 +94,23 @@ update msg game =
         ChangeState ->
             case game.state of
                 Title ->
-                    { game
-                        | state = Playing
-                    }
+                    game
+                        |> Game.withState Playing
                         |> withNoCmd
 
                 Playing ->
-                    { game
-                        | state = Paused
-                    }
+                    game
+                        |> Game.withState Paused
                         |> withNoCmd
 
                 Paused ->
-                    { game
-                        | state = Playing
-                    }
+                    game
+                        |> Game.withState Playing
                         |> withNoCmd
 
                 Over ->
-                    let
-                        game_ =
-                            Game.initial
-                    in
-                    { game_
-                        | state = Playing
-                    }
+                    Game.initial
+                        |> Game.withState Playing
                         |> withCmd (generateFood game.width game.height)
 
         NewFood food ->

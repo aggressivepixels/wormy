@@ -8,6 +8,7 @@ module Game exposing
     , isCellInsideField
     , maybeMoveWorm
     , updateTime
+    , withState
     )
 
 import NonEmptyList exposing (NonEmptyList)
@@ -91,6 +92,13 @@ type alias Game =
     , direction : Direction
     , targetDirection : Direction
     , state : State
+    }
+
+
+withState : State -> Game -> Game
+withState state game =
+    { game
+        | state = state
     }
 
 
