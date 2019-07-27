@@ -2,6 +2,7 @@ module Wormy exposing (main)
 
 import Browser
 import Browser.Events
+import Game exposing (Cell, Direction(..), Game, State(..))
 import Html exposing (Html)
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
@@ -13,51 +14,128 @@ import Svg.Attributes
 import Time exposing (Posix)
 
 
-type alias Cell =
-    { x : Int
-    , y : Int
-    }
+main : Program () Game Msg
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
-cellIn : Int -> Int -> Generator Cell
-cellIn width height =
-    Random.map2
-        Cell
-        (Random.int 0 (width - 1))
-        (Random.int 0 (height - 1))
+init : () -> ( Game, Cmd Msg )
+init _ =
+    Game.initial
+        |> withCmd (generateFood Game.initial.width Game.initial.height)
 
 
-inField : Int -> Int -> Cell -> Bool
-inField width height { x, y } =
-    (x >= 0 && x < width) && (y >= 0 && y < height)
+generateFood : Int -> Int -> Cmd Msg
+generateFood width height =
+    Random.generate NewFood (Game.cellGenerator width height)
 
 
-newFood : Int -> Int -> Cmd Msg
-newFood width height =
-    Random.generate NewFood (cellIn width height)
+type Msg
+    = Frame Float
+    | Move Direction
+    | ChangeState
+    | NewFood Cell
+    | None
 
 
-moveCell : Direction -> Cell -> Cell
-moveCell direction { x, y } =
-    case direction of
-        Up ->
-            Cell x (y - 1)
+update : Msg -> Game -> ( Game, Cmd Msg )
+update msg game =
+    case msg of
+        Frame delta ->
+            if game.state == Playing then
+                let
+                    game_ =
+                        game
+                            |> Game.updateTime delta
+                            |> Game.maybeMoveWorm
+                in
+                if
+                    List.any
+                        ((==) (NonEmptyList.head game_.worm))
+                        (NonEmptyList.tail game_.worm)
+                        || not
+                            (Game.isCellInsideField
+                                game_.width
+                                game_.height
+                                (NonEmptyList.head game_.worm)
+                            )
+                then
+                    { game_ | state = Over }
+                        |> withNoCmd
 
-        Down ->
-            Cell x (y + 1)
+                else
+                    game_
+                        |> (if game_.food == Nothing then
+                                withCmd (generateFood game.width game.height)
 
-        Left ->
-            Cell (x - 1) y
+                            else
+                                withNoCmd
+                           )
 
-        Right ->
-            Cell (x + 1) y
+            else
+                game
+                    |> withNoCmd
 
+        Move direction ->
+            if game.state == Playing then
+                { game
+                    | targetDirection = direction
+                }
+                    |> withNoCmd
 
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
+            else
+                game
+                    |> withNoCmd
+
+        ChangeState ->
+            case game.state of
+                Title ->
+                    { game
+                        | state = Playing
+                    }
+                        |> withNoCmd
+
+                Playing ->
+                    { game
+                        | state = Paused
+                    }
+                        |> withNoCmd
+
+                Paused ->
+                    { game
+                        | state = Playing
+                    }
+                        |> withNoCmd
+
+                Over ->
+                    let
+                        game_ =
+                            Game.initial
+                    in
+                    { game_
+                        | state = Playing
+                    }
+                        |> withCmd (generateFood game.width game.height)
+
+        NewFood food ->
+            if NonEmptyList.any ((==) food) game.worm then
+                game
+                    |> withCmd (generateFood game.width game.height)
+
+            else
+                { game
+                    | food = Just food
+                }
+                    |> withNoCmd
+
+        None ->
+            game
+                |> withNoCmd
 
 
 keyDecoder : Decoder Msg
@@ -87,86 +165,8 @@ keyToMsg string =
             None
 
 
-oppositeDirection : Direction -> Direction
-oppositeDirection direction =
-    case direction of
-        Up ->
-            Down
-
-        Down ->
-            Up
-
-        Left ->
-            Right
-
-        Right ->
-            Left
-
-
-type State
-    = Title
-    | Playing
-    | Paused
-    | Over
-
-
-type alias Model =
-    { width : Int
-    , height : Int
-    , score : Int
-    , elapsed : Float
-    , timer : Float
-    , frameDuration : Float
-    , worm : NonEmptyList Cell
-    , food : Maybe Cell
-    , direction : Direction
-    , targetDirection : Direction
-    , state : State
-    }
-
-
-initialModel : Model
-initialModel =
-    { width = 20
-    , height = 10
-    , score = 0
-    , elapsed = 0
-    , timer = 0
-    , frameDuration = 1000 / 10
-    , worm = NonEmptyList.from (Cell 4 1) [ Cell 3 1, Cell 2 1, Cell 1 1 ]
-    , food = Nothing
-    , direction = Right
-    , targetDirection = Right
-    , state = Title
-    }
-
-
-type Msg
-    = Frame Float
-    | Move Direction
-    | ChangeState
-    | NewFood Cell
-    | None
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    initialModel
-        |> withCmd (newFood initialModel.width initialModel.height)
-
-
-view : Model -> Html Msg
-view model =
+view : Game -> Html Msg
+view game =
     let
         overlayColor =
             "#FFFFFFD5"
@@ -216,10 +216,10 @@ view model =
         ]
         [ Html.div
             [ Html.Attributes.style "width" <|
-                String.fromInt (model.width * cellSize)
+                String.fromInt (game.width * cellSize)
                     ++ "px"
             , Html.Attributes.style "height" <|
-                String.fromInt (model.height * cellSize)
+                String.fromInt (game.height * cellSize)
                     ++ "px"
             , Html.Attributes.style "border-width" <|
                 String.fromFloat borderWidth
@@ -234,11 +234,11 @@ view model =
             ]
             [ Svg.svg
                 [ Svg.Attributes.width <|
-                    String.fromInt (model.width * cellSize)
+                    String.fromInt (game.width * cellSize)
                 , Svg.Attributes.height <|
-                    String.fromInt (model.height * cellSize)
+                    String.fromInt (game.height * cellSize)
                 ]
-                [ case model.food of
+                [ case game.food of
                     Just food ->
                         fillCell cellBorderWidth foodBorderColor cellSize foodColor food
 
@@ -247,10 +247,10 @@ view model =
                 , Svg.g []
                     (List.map
                         (fillCell cellBorderWidth wormBorderColor cellSize wormColor)
-                        (NonEmptyList.toList model.worm)
+                        (NonEmptyList.toList game.worm)
                     )
                 ]
-            , if not (model.state == Playing) then
+            , if not (game.state == Playing) then
                 Html.div
                     [ Html.Attributes.style "width" "100%"
                     , Html.Attributes.style "height" "100%"
@@ -263,7 +263,7 @@ view model =
                             String.fromInt framePadding
                                 ++ "px"
                         ]
-                        [ case model.state of
+                        [ case game.state of
                             Title ->
                                 Html.div
                                     []
@@ -301,7 +301,7 @@ view model =
                                         , Html.div
                                             [ Html.Attributes.style "font-size" "0.5em"
                                             ]
-                                            [ Html.text <| "Final score: " ++ String.fromInt model.score
+                                            [ Html.text <| "Final score: " ++ String.fromInt game.score
                                             ]
                                         ]
                                     , Html.p
@@ -321,9 +321,9 @@ view model =
         , Html.div
             [ Html.Attributes.style "text-align" "right"
             ]
-            [ Html.text <| "Score: " ++ String.fromInt model.score
+            [ Html.text <| "Score: " ++ String.fromInt game.score
             , Html.br [] []
-            , Html.text <| "Time: " ++ formatDuration (Time.millisToPosix <| round model.elapsed)
+            , Html.text <| "Time: " ++ formatDuration (Time.millisToPosix <| round game.elapsed)
             ]
         ]
 
@@ -342,163 +342,9 @@ fillCell strokeWidth strokeColor size color { x, y } =
         []
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        Frame delta ->
-            if model.state == Playing then
-                let
-                    model_ =
-                        model
-                            |> updateTime delta
-                            |> slither
-                in
-                if
-                    List.any
-                        ((==) (NonEmptyList.head model_.worm))
-                        (NonEmptyList.tail model_.worm)
-                        || not
-                            (inField
-                                model_.width
-                                model_.height
-                                (NonEmptyList.head model_.worm)
-                            )
-                then
-                    { model_ | state = Over }
-                        |> withNoCmd
-
-                else
-                    model_
-                        |> (if model_.food == Nothing then
-                                withCmd (newFood model.width model.height)
-
-                            else
-                                withNoCmd
-                           )
-
-            else
-                model
-                    |> withNoCmd
-
-        Move direction ->
-            if model.state == Playing then
-                { model
-                    | targetDirection = direction
-                }
-                    |> withNoCmd
-
-            else
-                model
-                    |> withNoCmd
-
-        ChangeState ->
-            case model.state of
-                Title ->
-                    { model
-                        | state = Playing
-                    }
-                        |> withNoCmd
-
-                Playing ->
-                    { model
-                        | state = Paused
-                    }
-                        |> withNoCmd
-
-                Paused ->
-                    { model
-                        | state = Playing
-                    }
-                        |> withNoCmd
-
-                Over ->
-                    { initialModel
-                        | state = Playing
-                    }
-                        |> withCmd (newFood model.width model.height)
-
-        NewFood food ->
-            if NonEmptyList.any ((==) food) model.worm then
-                model
-                    |> withCmd (newFood model.width model.height)
-
-            else
-                { model
-                    | food = Just food
-                }
-                    |> withNoCmd
-
-        None ->
-            model
-                |> withNoCmd
-
-
-updateTime : Float -> Model -> Model
-updateTime delta model =
-    { model
-        | elapsed = model.elapsed + delta
-        , timer = model.timer - delta
-    }
-
-
-slither : Model -> Model
-slither model =
-    if model.timer <= 0 then
-        let
-            ate =
-                case model.food of
-                    Just food ->
-                        NonEmptyList.head model.worm == food
-
-                    Nothing ->
-                        False
-
-            direction_ =
-                if
-                    oppositeDirection model.direction
-                        == model.targetDirection
-                then
-                    model.direction
-
-                else
-                    model.targetDirection
-
-            head_ =
-                moveCell direction_ (NonEmptyList.head model.worm)
-
-            worm_ =
-                if ate then
-                    NonEmptyList.cons head_ model.worm
-
-                else
-                    model.worm |> NonEmptyList.cons head_ |> NonEmptyList.init
-        in
-        { model
-            | timer = model.timer + model.frameDuration
-            , worm = worm_
-            , food =
-                if ate then
-                    Nothing
-
-                else
-                    model.food
-            , score =
-                if ate then
-                    model.score + 1
-
-                else
-                    model.score
-            , direction = direction_
-            , targetDirection = direction_
-        }
-
-    else
-        model
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    case model.state of
+subscriptions : Game -> Sub Msg
+subscriptions game =
+    case game.state of
         Playing ->
             Sub.batch
                 [ Browser.Events.onAnimationFrameDelta Frame
