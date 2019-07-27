@@ -371,20 +371,6 @@ withNoCmd model =
 
 
 
--- LIST HELPERS
-
-
-listInit : List a -> List a
-listInit list =
-    case List.reverse list of
-        [] ->
-            []
-
-        _ :: rest ->
-            List.reverse rest
-
-
-
 -- TIME FORMATTING
 
 
