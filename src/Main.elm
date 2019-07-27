@@ -8,7 +8,6 @@ import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import NonEmptyList exposing (NonEmptyList)
 import Random exposing (Generator)
-import Set exposing (Set)
 import Svg exposing (Svg)
 import Svg.Attributes
 import Time exposing (Posix)
