@@ -4,6 +4,7 @@ module Game exposing
     , Game
     , State(..)
     , canPlaceFood
+    , changeState
     , generateFood
     , initial
     , isCellInsideField
@@ -11,7 +12,6 @@ module Game exposing
     , placeFood
     , updateTargetDirection
     , updateTime
-    , withState
     )
 
 import NonEmptyList exposing (NonEmptyList)
@@ -103,8 +103,8 @@ type alias Game =
     }
 
 
-withState : State -> Game -> Game
-withState state game =
+changeState : State -> Game -> Game
+changeState state game =
     { game
         | state = state
     }

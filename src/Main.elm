@@ -58,7 +58,7 @@ update msg game =
                             )
                 then
                     game_
-                        |> Game.withState Over
+                        |> Game.changeState Over
                         |> withNoCmd
 
                 else
@@ -83,22 +83,22 @@ update msg game =
             case game.state of
                 Title ->
                     game
-                        |> Game.withState Playing
+                        |> Game.changeState Playing
                         |> withNoCmd
 
                 Playing ->
                     game
-                        |> Game.withState Paused
+                        |> Game.changeState Paused
                         |> withNoCmd
 
                 Paused ->
                     game
-                        |> Game.withState Playing
+                        |> Game.changeState Playing
                         |> withNoCmd
 
                 Over ->
                     Game.initial
-                        |> Game.withState Playing
+                        |> Game.changeState Playing
                         |> withCmd (Game.generateFood NewFood game)
 
         NewFood food ->
