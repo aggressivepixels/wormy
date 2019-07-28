@@ -8,8 +8,9 @@ module Game exposing
     , generateFood
     , initial
     , isCellInsideField
-    , maybeMoveWorm
     , placeFood
+    , shouldGenerateFood
+    , update
     , updateTargetDirection
     , updateTime
     )
@@ -126,6 +127,50 @@ initial =
     }
 
 
+update : Float -> Game -> Game
+update delta game =
+    case game.state of
+        Playing ->
+            game
+                |> updateHelper delta
+
+        _ ->
+            game
+
+
+updateHelper : Float -> Game -> Game
+updateHelper delta game =
+    let
+        game_ =
+            game
+                |> updateTime delta
+    in
+    if game_.timer <= 0 then
+        game_
+            |> moveWorm
+
+    else
+        game_
+
+
+checkGameOver : Game -> Bool
+checkGameOver { worm, width, height } =
+    List.any
+        ((==) (NonEmptyList.head worm))
+        (NonEmptyList.tail worm)
+        || not
+            (isCellInsideField
+                width
+                height
+                (NonEmptyList.head worm)
+            )
+
+
+shouldGenerateFood : Game -> Bool
+shouldGenerateFood { food } =
+    food == Nothing
+
+
 updateTime : Float -> Game -> Game
 updateTime delta game =
     { game
@@ -146,61 +191,73 @@ updateTargetDirection direction game =
             game
 
 
-maybeMoveWorm : Game -> Game
-maybeMoveWorm game =
-    if game.timer <= 0 then
-        let
-            ate =
-                case game.food of
-                    Just food ->
-                        NonEmptyList.head game.worm == food
+moveWorm : Game -> Game
+moveWorm game =
+    let
+        game_ =
+            game
+                |> moveWormHelper
+    in
+    game_
+        |> (if checkGameOver game_ then
+                changeState Over
 
-                    Nothing ->
-                        False
+            else
+                identity
+           )
 
-            direction_ =
-                if
-                    oppositeDirection game.direction
-                        == game.targetDirection
-                then
-                    game.direction
 
-                else
-                    game.targetDirection
+moveWormHelper : Game -> Game
+moveWormHelper game =
+    let
+        ate =
+            case game.food of
+                Just food ->
+                    NonEmptyList.head game.worm == food
 
-            head_ =
-                moveCell direction_ (NonEmptyList.head game.worm)
+                Nothing ->
+                    False
 
-            worm_ =
-                if ate then
-                    NonEmptyList.cons head_ game.worm
+        direction_ =
+            if
+                oppositeDirection game.direction
+                    == game.targetDirection
+            then
+                game.direction
 
-                else
-                    game.worm
-                        |> NonEmptyList.cons head_
-                        |> NonEmptyList.dropLast
-        in
-        { game
-            | timer = game.timer + game.frameDuration
-            , worm = worm_
-            , food =
-                if ate then
-                    Nothing
+            else
+                game.targetDirection
 
-                else
-                    game.food
-            , score =
-                if ate then
-                    game.score + 1
+        head_ =
+            moveCell direction_ (NonEmptyList.head game.worm)
 
-                else
-                    game.score
-            , direction = direction_
-            , targetDirection = direction_
-        }
+        worm_ =
+            if ate then
+                NonEmptyList.cons head_ game.worm
 
-    else
-        game
+            else
+                game.worm
+                    |> NonEmptyList.cons head_
+                    |> NonEmptyList.dropLast
+    in
+    { game
+        | timer = game.timer + game.frameDuration
+        , worm = worm_
+        , food =
+            if ate then
+                Nothing
+
+            else
+                game.food
+        , score =
+            if ate then
+                game.score + 1
+
+            else
+                game.score
+        , direction = direction_
+        , targetDirection = direction_
+    }
 
 
 canPlaceFood : Cell -> Game -> Bool

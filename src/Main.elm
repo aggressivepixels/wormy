@@ -39,40 +39,18 @@ update : Msg -> Game -> ( Game, Cmd Msg )
 update msg game =
     case msg of
         Frame delta ->
-            if game.state == Playing then
-                let
-                    game_ =
-                        game
-                            |> Game.updateTime delta
-                            |> Game.maybeMoveWorm
-                in
-                if
-                    List.any
-                        ((==) (NonEmptyList.head game_.worm))
-                        (NonEmptyList.tail game_.worm)
-                        || not
-                            (Game.isCellInsideField
-                                game_.width
-                                game_.height
-                                (NonEmptyList.head game_.worm)
-                            )
-                then
-                    game_
-                        |> Game.changeState Over
-                        |> withNoCmd
+            let
+                game_ =
+                    game
+                        |> Game.update delta
+            in
+            game_
+                |> (if Game.shouldGenerateFood game_ then
+                        withCmd (Game.generateFood NewFood game)
 
-                else
-                    game_
-                        |> (if game_.food == Nothing then
-                                withCmd (Game.generateFood NewFood game_)
-
-                            else
-                                withNoCmd
-                           )
-
-            else
-                game
-                    |> withNoCmd
+                    else
+                        withNoCmd
+                   )
 
         Move direction ->
             game
