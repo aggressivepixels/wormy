@@ -82,9 +82,8 @@ update msg game =
 
         Move direction ->
             if game.state == Playing then
-                { game
-                    | targetDirection = direction
-                }
+                game
+                    |> Game.updateTargetDirection direction
                     |> withNoCmd
 
             else

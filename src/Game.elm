@@ -9,6 +9,7 @@ module Game exposing
     , isCellInsideField
     , maybeMoveWorm
     , placeFood
+    , updateTargetDirection
     , updateTime
     , withState
     )
@@ -125,6 +126,13 @@ updateTime delta game =
     { game
         | elapsed = game.elapsed + delta
         , timer = game.timer - delta
+    }
+
+
+updateTargetDirection : Direction -> Game -> Game
+updateTargetDirection direction game =
+    { game
+        | targetDirection = direction
     }
 
 
