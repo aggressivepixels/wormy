@@ -64,7 +64,8 @@ update msg game =
                                 (NonEmptyList.head game_.worm)
                             )
                 then
-                    { game_ | state = Over }
+                    game_
+                        |> Game.withState Over
                         |> withNoCmd
 
                 else
