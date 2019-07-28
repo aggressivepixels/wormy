@@ -1,7 +1,7 @@
 module Wormy exposing (main)
 
 import Browser
-import Browser.Events
+import Browser.Events exposing (Visibility(..))
 import Game exposing (Cell, Direction(..), Game, State(..))
 import Html exposing (Html)
 import Html.Attributes
@@ -33,6 +33,7 @@ type Msg
     | Move Direction
     | ChangeState
     | NewFood Cell
+    | VisibilityChange Visibility
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
@@ -88,6 +89,21 @@ update msg game =
             else
                 game
                     |> withCmd (Game.generateFood NewFood game)
+
+        VisibilityChange visibility ->
+            if game.state == Playing then
+                if visibility == Hidden then
+                    game
+                        |> Game.changeState Paused
+                        |> withNoCmd
+
+                else
+                    game
+                        |> withNoCmd
+
+            else
+                game
+                    |> withNoCmd
 
 
 keyDecoder : Decoder Msg
@@ -301,6 +317,7 @@ subscriptions game =
         Playing ->
             Sub.batch
                 [ Browser.Events.onAnimationFrameDelta Frame
+                , Browser.Events.onVisibilityChange VisibilityChange
                 , Browser.Events.onKeyDown keyDecoder
                 ]
 
