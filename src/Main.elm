@@ -33,7 +33,6 @@ type Msg
     | Move Direction
     | ChangeState
     | NewFood Cell
-    | None
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
@@ -117,36 +116,33 @@ update msg game =
                 game
                     |> withCmd (Game.generateFood NewFood game)
 
-        None ->
-            game
-                |> withNoCmd
-
 
 keyDecoder : Decoder Msg
 keyDecoder =
-    Decode.map keyToMsg (Decode.field "key" Decode.string)
+    Decode.field "key" Decode.string
+        |> Decode.andThen keyToMsg
 
 
-keyToMsg : String -> Msg
+keyToMsg : String -> Decoder Msg
 keyToMsg string =
     case string of
         "ArrowLeft" ->
-            Move Left
+            Decode.succeed <| Move Left
 
         "ArrowRight" ->
-            Move Right
+            Decode.succeed <| Move Right
 
         "ArrowUp" ->
-            Move Up
+            Decode.succeed <| Move Up
 
         "ArrowDown" ->
-            Move Down
+            Decode.succeed <| Move Down
 
         " " ->
-            ChangeState
+            Decode.succeed <| ChangeState
 
         _ ->
-            None
+            Decode.fail <| "Not interested in " ++ string
 
 
 view : Game -> Html Msg
