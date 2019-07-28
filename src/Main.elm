@@ -75,14 +75,9 @@ update msg game =
                     |> withNoCmd
 
         Move direction ->
-            if game.state == Playing then
-                game
-                    |> Game.updateTargetDirection direction
-                    |> withNoCmd
-
-            else
-                game
-                    |> withNoCmd
+            game
+                |> Game.updateTargetDirection direction
+                |> withNoCmd
 
         ChangeState ->
             case game.state of

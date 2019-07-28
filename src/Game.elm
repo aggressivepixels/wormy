@@ -136,9 +136,14 @@ updateTime delta game =
 
 updateTargetDirection : Direction -> Game -> Game
 updateTargetDirection direction game =
-    { game
-        | targetDirection = direction
-    }
+    case game.state of
+        Playing ->
+            { game
+                | targetDirection = direction
+            }
+
+        _ ->
+            game
 
 
 maybeMoveWorm : Game -> Game
