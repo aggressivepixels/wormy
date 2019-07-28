@@ -204,8 +204,8 @@ maybeMoveWorm game =
 
 
 canPlaceFood : Cell -> Game -> Bool
-canPlaceFood cell game =
-    NonEmptyList.all ((/=) cell) game.worm
+canPlaceFood cell { worm } =
+    NonEmptyList.all ((/=) cell) worm
 
 
 placeFood : Cell -> Game -> Game
