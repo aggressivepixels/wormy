@@ -7,7 +7,6 @@ import Html exposing (Html)
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import NonEmptyList exposing (NonEmptyList)
-import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes
 import Time exposing (Posix)
@@ -26,12 +25,7 @@ main =
 init : () -> ( Game, Cmd Msg )
 init _ =
     Game.initial
-        |> withCmd (generateFood Game.initial.width Game.initial.height)
-
-
-generateFood : Int -> Int -> Cmd Msg
-generateFood width height =
-    Random.generate NewFood (Game.cellGenerator width height)
+        |> withCmd (Game.generateFood NewFood Game.initial)
 
 
 type Msg
@@ -71,7 +65,7 @@ update msg game =
                 else
                     game_
                         |> (if game_.food == Nothing then
-                                withCmd (generateFood game.width game.height)
+                                withCmd (Game.generateFood NewFood game_)
 
                             else
                                 withNoCmd
@@ -111,7 +105,7 @@ update msg game =
                 Over ->
                     Game.initial
                         |> Game.withState Playing
-                        |> withCmd (generateFood game.width game.height)
+                        |> withCmd (Game.generateFood NewFood game)
 
         NewFood food ->
             if game |> Game.canPlaceFood food then
@@ -121,7 +115,7 @@ update msg game =
 
             else
                 game
-                    |> withCmd (generateFood game.width game.height)
+                    |> withCmd (Game.generateFood NewFood game)
 
         None ->
             game

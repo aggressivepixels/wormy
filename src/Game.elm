@@ -4,7 +4,7 @@ module Game exposing
     , Game
     , State(..)
     , canPlaceFood
-    , cellGenerator
+    , generateFood
     , initial
     , isCellInsideField
     , maybeMoveWorm
@@ -53,6 +53,11 @@ cellGenerator width height =
         Cell
         (Random.int 0 (width - 1))
         (Random.int 0 (height - 1))
+
+
+generateFood : (Cell -> msg) -> Game -> Cmd msg
+generateFood msg { width, height } =
+    Random.generate msg (cellGenerator width height)
 
 
 isCellInsideField : Int -> Int -> Cell -> Bool
