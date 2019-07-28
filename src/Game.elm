@@ -171,7 +171,9 @@ maybeMoveWorm game =
                     NonEmptyList.cons head_ game.worm
 
                 else
-                    game.worm |> NonEmptyList.cons head_ |> NonEmptyList.init
+                    game.worm
+                        |> NonEmptyList.cons head_
+                        |> NonEmptyList.dropLast
         in
         { game
             | timer = game.timer + game.frameDuration

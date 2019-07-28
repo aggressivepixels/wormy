@@ -2,9 +2,9 @@ module NonEmptyList exposing
     ( NonEmptyList
     , all
     , cons
+    , dropLast
     , from
     , head
-    , init
     , tail
     , toList
     )
@@ -39,15 +39,19 @@ all f (NonEmptyList x xs) =
     List.all f (x :: xs)
 
 
-init : NonEmptyList a -> NonEmptyList a
-init (NonEmptyList x xs) =
+dropLast : NonEmptyList a -> NonEmptyList a
+dropLast (NonEmptyList x xs) =
     NonEmptyList x
-        (case List.reverse xs of
-            [] ->
+        (let
+            length =
+                List.length xs
+         in
+         case length of
+            0 ->
                 []
 
-            _ :: xs_ ->
-                List.reverse xs_
+            _ ->
+                List.take (length - 1) xs
         )
 
 
