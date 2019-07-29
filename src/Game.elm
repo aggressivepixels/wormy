@@ -7,12 +7,10 @@ module Game exposing
     , changeState
     , generateFood
     , initial
-    , isCellInsideField
     , placeFood
     , shouldGenerateFood
     , update
     , updateTargetDirection
-    , updateTime
     )
 
 import NonEmptyList exposing (NonEmptyList)
