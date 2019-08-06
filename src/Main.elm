@@ -4,13 +4,8 @@ import Browser
 import Browser.Events exposing (Visibility(..))
 import Game exposing (Cell, Direction(..), Game, State(..))
 import Html exposing (Html)
-import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
-import NonEmptyList exposing (NonEmptyList)
 import Renderer
-import Svg exposing (Svg)
-import Svg.Attributes
-import Time exposing (Posix)
 
 
 main : Program () Game Msg
