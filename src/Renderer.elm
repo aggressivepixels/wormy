@@ -186,15 +186,19 @@ fillCell strokeSize strokeColor size color cell =
 
 formatDuration : Float -> String
 formatDuration duration =
-    let
-        duration_ =
-            Time.millisToPosix <| round duration
+    round duration
+        |> Time.millisToPosix
+        |> formatPosixDuration
 
+
+formatPosixDuration : Posix -> String
+formatPosixDuration duration =
+    let
         minutes =
-            String.fromInt <| Time.toMinute Time.utc duration_
+            String.fromInt <| Time.toMinute Time.utc duration
 
         seconds =
-            String.fromInt <| Time.toSecond Time.utc duration_
+            String.fromInt <| Time.toSecond Time.utc duration
     in
     minutes
         ++ ":"
