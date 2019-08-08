@@ -112,22 +112,22 @@ keyToMsg : String -> Decoder Msg
 keyToMsg string =
     case string of
         "ArrowLeft" ->
-            Decode.succeed <| Move Left
+            Decode.succeed (Move Left)
 
         "ArrowRight" ->
-            Decode.succeed <| Move Right
+            Decode.succeed (Move Right)
 
         "ArrowUp" ->
-            Decode.succeed <| Move Up
+            Decode.succeed (Move Up)
 
         "ArrowDown" ->
-            Decode.succeed <| Move Down
+            Decode.succeed (Move Down)
 
         " " ->
-            Decode.succeed <| ChangeState
+            Decode.succeed ChangeState
 
         _ ->
-            Decode.fail <| "Not interested in " ++ string
+            Decode.fail ("Not interested in " ++ string)
 
 
 subscriptions : Game -> Sub Msg
