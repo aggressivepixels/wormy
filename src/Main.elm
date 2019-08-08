@@ -12,7 +12,7 @@ main : Program () Game Msg
 main =
     Browser.element
         { init = init
-        , view = view
+        , view = Renderer.render
         , update = update
         , subscriptions = subscriptions
         }
@@ -128,11 +128,6 @@ keyToMsg string =
 
         _ ->
             Decode.fail <| "Not interested in " ++ string
-
-
-view : Game -> Html Msg
-view game =
-    Renderer.render game
 
 
 subscriptions : Game -> Sub Msg
