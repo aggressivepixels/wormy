@@ -152,6 +152,26 @@ render game =
                                         ]
                                     ]
 
+                            Won ->
+                                div
+                                    []
+                                    [ b
+                                        [ style "font-size" "4em"
+                                        ]
+                                        [ text "You win!"
+                                        , br [] []
+                                        , div
+                                            [ style "font-size" "0.5em"
+                                            ]
+                                            [ text <| "Final score: " ++ String.fromInt game.score
+                                            ]
+                                        ]
+                                    , p
+                                        []
+                                        [ text "Press the space bar to start again"
+                                        ]
+                                    ]
+
                             _ ->
                                 text ""
                         ]

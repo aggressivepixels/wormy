@@ -76,6 +76,11 @@ update msg game =
                         |> Game.changeState Playing
                         |> withCmd (Game.generateFood NewFood game)
 
+                Won ->
+                    Game.initial
+                        |> Game.changeState Playing
+                        |> withCmd (Game.generateFood NewFood game)
+
         NewFood food ->
             if game |> Game.canPlaceFood food then
                 game

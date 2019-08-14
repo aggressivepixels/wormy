@@ -5,6 +5,7 @@ module NonEmptyList exposing
     , dropLast
     , from
     , head
+    , length
     , tail
     , toList
     )
@@ -43,18 +44,23 @@ dropLast : NonEmptyList a -> NonEmptyList a
 dropLast (NonEmptyList x xs) =
     NonEmptyList x
         (let
-            length =
+            len =
                 List.length xs
          in
-         case length of
+         case len of
             0 ->
                 []
 
             _ ->
-                List.take (length - 1) xs
+                List.take (len - 1) xs
         )
 
 
 toList : NonEmptyList a -> List a
 toList (NonEmptyList x xs) =
     x :: xs
+
+
+length : NonEmptyList a -> Int
+length (NonEmptyList _ xs) =
+    1 + List.length xs

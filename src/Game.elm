@@ -85,6 +85,7 @@ type State
     | Playing
     | Paused
     | Over
+    | Won
 
 
 type alias Game =
@@ -164,9 +165,14 @@ checkGameOver { worm, width, height } =
             )
 
 
+checkWon : Game -> Bool
+checkWon { worm, width, height } =
+    NonEmptyList.length worm == width * height
+
+
 shouldGenerateFood : Game -> Bool
-shouldGenerateFood { food } =
-    food == Nothing
+shouldGenerateFood { food, state } =
+    food == Nothing && state /= Won
 
 
 updateTime : Float -> Game -> Game
@@ -199,6 +205,12 @@ moveWorm game =
     game_
         |> (if checkGameOver game_ then
                 changeState Over
+
+            else
+                identity
+           )
+        |> (if checkWon game_ then
+                changeState Won
 
             else
                 identity
