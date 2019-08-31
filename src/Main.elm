@@ -34,8 +34,8 @@ type Msg
 
 update : Msg -> Game -> ( Game, Cmd Msg )
 update msg game =
-    case msg of
-        Frame delta ->
+    case ( msg, game.state ) of
+        ( Frame delta, _ ) ->
             let
                 game_ =
                     game
@@ -49,39 +49,37 @@ update msg game =
                         withNoCmd
                    )
 
-        Move direction ->
+        ( Move direction, _ ) ->
             game
                 |> Game.updateTargetDirection direction
                 |> withNoCmd
 
-        ChangeState ->
-            case game.state of
-                Title ->
-                    game
-                        |> Game.changeState Playing
-                        |> withNoCmd
+        ( ChangeState, Title ) ->
+            game
+                |> Game.changeState Playing
+                |> withNoCmd
 
-                Playing ->
-                    game
-                        |> Game.changeState Paused
-                        |> withNoCmd
+        ( ChangeState, Playing ) ->
+            game
+                |> Game.changeState Paused
+                |> withNoCmd
 
-                Paused ->
-                    game
-                        |> Game.changeState Playing
-                        |> withNoCmd
+        ( ChangeState, Paused ) ->
+            game
+                |> Game.changeState Playing
+                |> withNoCmd
 
-                Over ->
-                    Game.initial
-                        |> Game.changeState Playing
-                        |> withCmd (Game.generateFood NewFood game)
+        ( ChangeState, Over ) ->
+            Game.initial
+                |> Game.changeState Playing
+                |> withCmd (Game.generateFood NewFood game)
 
-                Won ->
-                    Game.initial
-                        |> Game.changeState Playing
-                        |> withCmd (Game.generateFood NewFood game)
+        ( ChangeState, Won ) ->
+            Game.initial
+                |> Game.changeState Playing
+                |> withCmd (Game.generateFood NewFood game)
 
-        NewFood food ->
+        ( NewFood food, _ ) ->
             if game |> Game.canPlaceFood food then
                 game
                     |> Game.placeFood food
@@ -91,20 +89,19 @@ update msg game =
                 game
                     |> withCmd (Game.generateFood NewFood game)
 
-        VisibilityChange visibility ->
-            if game.state == Playing then
-                if visibility == Hidden then
-                    game
-                        |> Game.changeState Paused
-                        |> withNoCmd
-
-                else
-                    game
-                        |> withNoCmd
+        ( VisibilityChange visibility, Playing ) ->
+            if visibility == Hidden then
+                game
+                    |> Game.changeState Paused
+                    |> withNoCmd
 
             else
                 game
                     |> withNoCmd
+
+        ( _, _ ) ->
+            game
+                |> withNoCmd
 
 
 keyDecoder : Decoder Msg
