@@ -5,14 +5,14 @@ import Browser.Events exposing (Visibility(..))
 import Game exposing (Cell, Direction(..), Game, State(..))
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
-import Renderer
+import View
 
 
 main : Program () Game Msg
 main =
     Browser.element
         { init = init
-        , view = Renderer.render
+        , view = View.view
         , update = update
         , subscriptions = subscriptions
         }

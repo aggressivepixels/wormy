@@ -1,4 +1,4 @@
-module Renderer exposing (render)
+module View exposing (view)
 
 import Game exposing (Cell, Game, State(..))
 import Html exposing (Html, b, br, div, p, text)
@@ -57,8 +57,8 @@ overlayContentPadding =
     16
 
 
-render : Game -> Html msg
-render game =
+view : Game -> Html msg
+view game =
     div
         [ style "width" "fit-content"
         , style "height" "fit-content"
