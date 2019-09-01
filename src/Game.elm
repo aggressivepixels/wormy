@@ -1,7 +1,5 @@
 module Game exposing
-    ( Cell
-    , Direction(..)
-    , Game
+    ( Game
     , State(..)
     , canPlaceFood
     , changeState
@@ -13,37 +11,10 @@ module Game exposing
     , updateTargetDirection
     )
 
+import Cell exposing (Cell(..))
+import Direction exposing (Direction(..))
 import NonEmptyList exposing (NonEmptyList)
 import Random exposing (Generator)
-
-
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
-
-
-oppositeDirection : Direction -> Direction
-oppositeDirection direction =
-    case direction of
-        Up ->
-            Down
-
-        Down ->
-            Up
-
-        Left ->
-            Right
-
-        Right ->
-            Left
-
-
-type alias Cell =
-    { x : Int
-    , y : Int
-    }
 
 
 cellGenerator : Int -> Int -> Generator Cell
@@ -60,24 +31,8 @@ generateFood msg { width, height } =
 
 
 isCellInsideField : Int -> Int -> Cell -> Bool
-isCellInsideField width height { x, y } =
+isCellInsideField width height (Cell x y) =
     (x >= 0 && x < width) && (y >= 0 && y < height)
-
-
-moveCell : Direction -> Cell -> Cell
-moveCell direction { x, y } =
-    case direction of
-        Up ->
-            Cell x (y - 1)
-
-        Down ->
-            Cell x (y + 1)
-
-        Left ->
-            Cell (x - 1) y
-
-        Right ->
-            Cell (x + 1) y
 
 
 type State
@@ -229,17 +184,14 @@ moveWormHelper game =
                     False
 
         direction_ =
-            if
-                oppositeDirection game.direction
-                    == game.targetDirection
-            then
+            if Direction.opposite game.direction == game.targetDirection then
                 game.direction
 
             else
                 game.targetDirection
 
         head_ =
-            moveCell direction_ (NonEmptyList.head game.worm)
+            Cell.move direction_ (NonEmptyList.head game.worm)
 
         worm_ =
             if ate then

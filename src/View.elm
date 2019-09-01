@@ -1,6 +1,7 @@
 module View exposing (view)
 
-import Game exposing (Cell, Game, State(..))
+import Cell exposing (Cell(..))
+import Game exposing (Game, State(..))
 import Html exposing (Html, b, br, div, p, text)
 import Html.Attributes exposing (style)
 import NonEmptyList
@@ -191,15 +192,15 @@ view game =
 
 
 fillCell : Float -> String -> Float -> String -> Cell -> Svg a
-fillCell strokeSize strokeColor size color cell =
+fillCell strokeSize strokeColor size color (Cell cx cy) =
     rect
         [ width (String.fromFloat size)
         , height (String.fromFloat size)
         , fill color
         , stroke strokeColor
         , strokeWidth (String.fromFloat strokeSize)
-        , x (String.fromFloat (toFloat cell.x * size))
-        , y (String.fromFloat (toFloat cell.y * size))
+        , x (String.fromFloat (toFloat cx * size))
+        , y (String.fromFloat (toFloat cy * size))
         ]
         []
 

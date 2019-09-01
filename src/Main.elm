@@ -2,7 +2,9 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events exposing (Visibility(..))
-import Game exposing (Cell, Direction(..), Game, State(..))
+import Cell exposing (Cell(..))
+import Direction exposing (Direction(..))
+import Game exposing (Game, State(..))
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import View
