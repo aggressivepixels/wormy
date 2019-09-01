@@ -20,8 +20,9 @@ main =
 
 init : () -> ( Game, Cmd Msg )
 init _ =
-    Game.initial
-        |> withCmd (Game.generateFood NewFood Game.initial)
+    ( Game.initial
+    , Game.generateFood NewFood Game.initial
+    )
 
 
 type Msg
@@ -37,71 +38,78 @@ update msg game =
     case ( msg, game.state ) of
         ( Frame delta, _ ) ->
             let
-                game_ =
+                newGame =
                     game
                         |> Game.update delta
             in
-            game_
-                |> (if Game.shouldGenerateFood game_ then
-                        withCmd (Game.generateFood NewFood game)
+            if Game.shouldGenerateFood newGame then
+                ( newGame
+                , Game.generateFood NewFood game
+                )
 
-                    else
-                        withNoCmd
-                   )
+            else
+                ( newGame
+                , Cmd.none
+                )
 
         ( Move direction, _ ) ->
-            game
-                |> Game.updateTargetDirection direction
-                |> withNoCmd
+            ( Game.updateTargetDirection direction game
+            , Cmd.none
+            )
 
         ( ChangeState, Title ) ->
-            game
-                |> Game.changeState Playing
-                |> withNoCmd
+            ( Game.changeState Playing game
+            , Cmd.none
+            )
 
         ( ChangeState, Playing ) ->
-            game
-                |> Game.changeState Paused
-                |> withNoCmd
+            ( Game.changeState Paused game
+            , Cmd.none
+            )
 
         ( ChangeState, Paused ) ->
-            game
-                |> Game.changeState Playing
-                |> withNoCmd
+            ( Game.changeState Playing game
+            , Cmd.none
+            )
 
         ( ChangeState, Over ) ->
-            Game.initial
-                |> Game.changeState Playing
-                |> withCmd (Game.generateFood NewFood game)
+            let
+                newGame =
+                    Game.changeState Playing Game.initial
+            in
+            ( newGame
+            , Game.generateFood NewFood newGame
+            )
 
         ( ChangeState, Won ) ->
-            Game.initial
-                |> Game.changeState Playing
-                |> withCmd (Game.generateFood NewFood game)
+            let
+                newGame =
+                    Game.changeState Playing Game.initial
+            in
+            ( newGame
+            , Game.generateFood NewFood newGame
+            )
 
         ( NewFood food, _ ) ->
             if game |> Game.canPlaceFood food then
-                game
-                    |> Game.placeFood food
-                    |> withNoCmd
+                ( Game.placeFood food game
+                , Cmd.none
+                )
 
             else
-                game
-                    |> withCmd (Game.generateFood NewFood game)
+                ( game
+                , Game.generateFood NewFood game
+                )
 
-        ( VisibilityChange visibility, Playing ) ->
-            if visibility == Hidden then
-                game
-                    |> Game.changeState Paused
-                    |> withNoCmd
-
-            else
-                game
-                    |> withNoCmd
+        ( VisibilityChange Hidden, Playing ) ->
+            ( Game.changeState Paused game
+            , Cmd.none
+            )
 
         ( _, _ ) ->
-            game
-                |> withNoCmd
+            ( game
+            , Cmd.none
+            )
 
 
 keyDecoder : Decoder Msg
@@ -144,18 +152,3 @@ subscriptions game =
 
         _ ->
             Browser.Events.onKeyDown keyDecoder
-
-
-
--- CMD HELPERS
-
-
-withCmd : Cmd a -> b -> ( b, Cmd a )
-withCmd cmd model =
-    ( model, cmd )
-
-
-withNoCmd : b -> ( b, Cmd a )
-withNoCmd model =
-    model
-        |> withCmd Cmd.none
