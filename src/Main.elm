@@ -8,23 +8,6 @@ import Json.Decode as Decode exposing (Decoder)
 import View
 
 
-main : Program () Game Msg
-main =
-    Browser.element
-        { init = init
-        , view = View.view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-init : () -> ( Game, Cmd Msg )
-init _ =
-    ( Game.initial
-    , Game.generateFood NewFood Game.initial
-    )
-
-
 type Msg
     = Frame Float
     | Move Direction
@@ -33,8 +16,30 @@ type Msg
     | VisibilityChange Visibility
 
 
-update : Msg -> Game -> ( Game, Cmd Msg )
-update msg game =
+type alias Model =
+    { game : Game
+    }
+
+
+main : Program () Model Msg
+main =
+    Browser.element
+        { init = init
+        , view = \{ game } -> View.view game
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Model Game.initial
+    , Game.generateFood NewFood Game.initial
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg { game } =
     case ( msg, game.state ) of
         ( Frame delta, _ ) ->
             let
@@ -43,32 +48,32 @@ update msg game =
                         |> Game.update delta
             in
             if Game.shouldGenerateFood newGame then
-                ( newGame
+                ( Model newGame
                 , Game.generateFood NewFood game
                 )
 
             else
-                ( newGame
+                ( Model newGame
                 , Cmd.none
                 )
 
         ( Move direction, _ ) ->
-            ( Game.updateTargetDirection direction game
+            ( Model (Game.updateTargetDirection direction game)
             , Cmd.none
             )
 
         ( ChangeState, Title ) ->
-            ( Game.changeState Playing game
+            ( Model (Game.changeState Playing game)
             , Cmd.none
             )
 
         ( ChangeState, Playing ) ->
-            ( Game.changeState Paused game
+            ( Model (Game.changeState Paused game)
             , Cmd.none
             )
 
         ( ChangeState, Paused ) ->
-            ( Game.changeState Playing game
+            ( Model (Game.changeState Playing game)
             , Cmd.none
             )
 
@@ -77,7 +82,7 @@ update msg game =
                 newGame =
                     Game.changeState Playing Game.initial
             in
-            ( newGame
+            ( Model newGame
             , Game.generateFood NewFood newGame
             )
 
@@ -86,28 +91,28 @@ update msg game =
                 newGame =
                     Game.changeState Playing Game.initial
             in
-            ( newGame
+            ( Model newGame
             , Game.generateFood NewFood newGame
             )
 
         ( NewFood food, _ ) ->
             if game |> Game.canPlaceFood food then
-                ( Game.placeFood food game
+                ( Model (Game.placeFood food game)
                 , Cmd.none
                 )
 
             else
-                ( game
+                ( Model game
                 , Game.generateFood NewFood game
                 )
 
         ( VisibilityChange Hidden, Playing ) ->
-            ( Game.changeState Paused game
+            ( Model (Game.changeState Paused game)
             , Cmd.none
             )
 
         ( _, _ ) ->
-            ( game
+            ( Model game
             , Cmd.none
             )
 
@@ -140,8 +145,8 @@ keyToMsg string =
             Decode.fail ("Not interested in " ++ string)
 
 
-subscriptions : Game -> Sub Msg
-subscriptions game =
+subscriptions : Model -> Sub Msg
+subscriptions { game } =
     case game.state of
         Playing ->
             Sub.batch
