@@ -62,25 +62,25 @@ view game =
     div
         [ style "width" "fit-content"
         , style "height" "fit-content"
-        , style "border-width" <| String.fromFloat borderWidth ++ "px"
+        , style "border-width" (String.fromFloat borderWidth ++ "px")
         , style "border-style" "solid"
         , style "border-color" borderColor
-        , style "padding" <| String.fromInt fieldPadding ++ "px"
+        , style "padding" (String.fromInt fieldPadding ++ "px")
         , style "font-family" "monospace"
         ]
         [ div
-            [ style "width" <| String.fromInt (game.width * cellSize) ++ "px"
-            , style "height" <| String.fromInt (game.height * cellSize) ++ "px"
-            , style "border-width" <| String.fromFloat borderWidth ++ "px"
+            [ style "width" (String.fromInt (game.width * cellSize) ++ "px")
+            , style "height" (String.fromInt (game.height * cellSize) ++ "px")
+            , style "border-width" (String.fromFloat borderWidth ++ "px")
             , style "border-style" "solid"
             , style "border-color" borderColor
             , style "background" fieldBackgroundColor
-            , style "margin-bottom" <| String.fromInt fieldPadding ++ "px"
+            , style "margin-bottom" (String.fromInt fieldPadding ++ "px")
             , style "position" "relative"
             ]
             [ svg
-                [ width <| String.fromInt (game.width * cellSize)
-                , height <| String.fromInt (game.height * cellSize)
+                [ width (String.fromInt (game.width * cellSize))
+                , height (String.fromInt (game.height * cellSize))
                 ]
                 [ case game.food of
                     Just food ->
@@ -103,7 +103,7 @@ view game =
                     , style "top" "0px"
                     ]
                     [ div
-                        [ style "padding" <| String.fromInt fieldPadding ++ "px"
+                        [ style "padding" (String.fromInt fieldPadding ++ "px")
                         ]
                         [ case game.state of
                             Title ->
@@ -143,7 +143,7 @@ view game =
                                         , div
                                             [ style "font-size" "0.5em"
                                             ]
-                                            [ text <| "Final score: " ++ String.fromInt game.score
+                                            [ text ("Final score: " ++ String.fromInt game.score)
                                             ]
                                         ]
                                     , p
@@ -163,7 +163,7 @@ view game =
                                         , div
                                             [ style "font-size" "0.5em"
                                             ]
-                                            [ text <| "Final score: " ++ String.fromInt game.score
+                                            [ text ("Final score: " ++ String.fromInt game.score)
                                             ]
                                         ]
                                     , p
@@ -183,9 +183,9 @@ view game =
         , div
             [ style "text-align" "right"
             ]
-            [ text <| "Score: " ++ String.fromInt game.score
+            [ text ("Score: " ++ String.fromInt game.score)
             , br [] []
-            , text <| "Time: " ++ formatDuration game.elapsed
+            , text ("Time: " ++ formatDuration game.elapsed)
             ]
         ]
 
@@ -193,11 +193,11 @@ view game =
 fillCell : Float -> String -> Float -> String -> Cell -> Svg a
 fillCell strokeSize strokeColor size color cell =
     rect
-        [ width <| String.fromFloat size
-        , height <| String.fromFloat size
+        [ width (String.fromFloat size)
+        , height (String.fromFloat size)
         , fill color
         , stroke strokeColor
-        , strokeWidth <| String.fromFloat strokeSize
+        , strokeWidth (String.fromFloat strokeSize)
         , x (String.fromFloat (toFloat cell.x * size))
         , y (String.fromFloat (toFloat cell.y * size))
         ]
@@ -215,10 +215,10 @@ formatPosixDuration : Posix -> String
 formatPosixDuration duration =
     let
         minutes =
-            String.fromInt <| Time.toMinute Time.utc duration
+            String.fromInt (Time.toMinute Time.utc duration)
 
         seconds =
-            String.fromInt <| Time.toSecond Time.utc duration
+            String.fromInt (Time.toSecond Time.utc duration)
     in
     minutes
         ++ ":"
