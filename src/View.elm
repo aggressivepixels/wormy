@@ -54,10 +54,6 @@ fieldPadding =
     16
 
 
-overlayContentPadding =
-    16
-
-
 view : Game -> Html msg
 view game =
     div
