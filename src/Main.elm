@@ -10,11 +10,11 @@ import View
 
 
 type Msg
-    = Frame Float
-    | Move Direction
-    | ChangeState
-    | NewFood Cell
-    | VisibilityChange Visibility
+    = FramePassed Float
+    | MoveRequested Direction
+    | ChangeStateRequested
+    | NewFoodCellGenerated Cell
+    | VisibilityChanged Visibility
 
 
 type alias Model =
@@ -35,14 +35,14 @@ main =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model Game.initial
-    , Game.generateFood NewFood Game.initial
+    , Game.generateFood NewFoodCellGenerated Game.initial
     )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg { game } =
     case ( msg, game.state ) of
-        ( Frame delta, _ ) ->
+        ( FramePassed delta, _ ) ->
             let
                 newGame =
                     game
@@ -50,7 +50,7 @@ update msg { game } =
             in
             if Game.shouldGenerateFood newGame then
                 ( Model newGame
-                , Game.generateFood NewFood game
+                , Game.generateFood NewFoodCellGenerated game
                 )
 
             else
@@ -58,45 +58,45 @@ update msg { game } =
                 , Cmd.none
                 )
 
-        ( Move direction, _ ) ->
+        ( MoveRequested direction, _ ) ->
             ( Model (Game.updateTargetDirection direction game)
             , Cmd.none
             )
 
-        ( ChangeState, Title ) ->
+        ( ChangeStateRequested, Title ) ->
             ( Model (Game.changeState Playing game)
             , Cmd.none
             )
 
-        ( ChangeState, Playing ) ->
+        ( ChangeStateRequested, Playing ) ->
             ( Model (Game.changeState Paused game)
             , Cmd.none
             )
 
-        ( ChangeState, Paused ) ->
+        ( ChangeStateRequested, Paused ) ->
             ( Model (Game.changeState Playing game)
             , Cmd.none
             )
 
-        ( ChangeState, Over ) ->
+        ( ChangeStateRequested, Over ) ->
             let
                 newGame =
                     Game.changeState Playing Game.initial
             in
             ( Model newGame
-            , Game.generateFood NewFood newGame
+            , Game.generateFood NewFoodCellGenerated newGame
             )
 
-        ( ChangeState, Won ) ->
+        ( ChangeStateRequested, Won ) ->
             let
                 newGame =
                     Game.changeState Playing Game.initial
             in
             ( Model newGame
-            , Game.generateFood NewFood newGame
+            , Game.generateFood NewFoodCellGenerated newGame
             )
 
-        ( NewFood food, _ ) ->
+        ( NewFoodCellGenerated food, _ ) ->
             if game |> Game.canPlaceFood food then
                 ( Model (Game.placeFood food game)
                 , Cmd.none
@@ -104,10 +104,10 @@ update msg { game } =
 
             else
                 ( Model game
-                , Game.generateFood NewFood game
+                , Game.generateFood NewFoodCellGenerated game
                 )
 
-        ( VisibilityChange Hidden, Playing ) ->
+        ( VisibilityChanged Hidden, Playing ) ->
             ( Model (Game.changeState Paused game)
             , Cmd.none
             )
@@ -128,19 +128,19 @@ keyToMsg : String -> Decoder Msg
 keyToMsg string =
     case string of
         "ArrowLeft" ->
-            Decode.succeed (Move Left)
+            Decode.succeed (MoveRequested Left)
 
         "ArrowRight" ->
-            Decode.succeed (Move Right)
+            Decode.succeed (MoveRequested Right)
 
         "ArrowUp" ->
-            Decode.succeed (Move Up)
+            Decode.succeed (MoveRequested Up)
 
         "ArrowDown" ->
-            Decode.succeed (Move Down)
+            Decode.succeed (MoveRequested Down)
 
         " " ->
-            Decode.succeed ChangeState
+            Decode.succeed ChangeStateRequested
 
         _ ->
             Decode.fail ("Not interested in " ++ string)
@@ -151,8 +151,8 @@ subscriptions { game } =
     case game.state of
         Playing ->
             Sub.batch
-                [ Browser.Events.onAnimationFrameDelta Frame
-                , Browser.Events.onVisibilityChange VisibilityChange
+                [ Browser.Events.onAnimationFrameDelta FramePassed
+                , Browser.Events.onVisibilityChange VisibilityChanged
                 , Browser.Events.onKeyDown keyDecoder
                 ]
 
