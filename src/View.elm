@@ -10,46 +10,57 @@ import Svg.Attributes exposing (fill, height, stroke, strokeWidth, width, x, y)
 import Time exposing (Posix)
 
 
+overlayColor : String
 overlayColor =
     "#FFFFFFD5"
 
 
+borderColor : String
 borderColor =
     "#E0E0E0"
 
 
+fieldBackgroundColor : String
 fieldBackgroundColor =
     "#FAFAFA"
 
 
+foodColor : String
 foodColor =
     "#F44336"
 
 
+foodBorderColor : String
 foodBorderColor =
     "#EF9A9A"
 
 
+wormColor : String
 wormColor =
     "#808080"
 
 
+wormBorderColor : String
 wormBorderColor =
     "#E0E0E0"
 
 
+cellSize : number
 cellSize =
     30
 
 
+borderWidth : number
 borderWidth =
     1
 
 
+cellBorderWidth : Float
 cellBorderWidth =
     0.5
 
 
+fieldPadding : number
 fieldPadding =
     16
 

@@ -1,7 +1,4 @@
-module Direction exposing
-    ( Direction(..)
-    , opposite
-    )
+module Direction exposing (Direction(..), opposite)
 
 
 type Direction

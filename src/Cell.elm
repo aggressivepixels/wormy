@@ -1,7 +1,4 @@
-module Cell exposing
-    ( Cell(..)
-    , move
-    )
+module Cell exposing (Cell(..), move)
 
 import Direction exposing (Direction(..))
 
