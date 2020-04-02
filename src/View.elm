@@ -68,101 +68,108 @@ fieldPadding =
 view : Game -> Html msg
 view game =
     div
-        [ style "width" "fit-content"
-        , style "height" "fit-content"
-        , style "border-width" (String.fromFloat borderWidth ++ "px")
-        , style "border-style" "solid"
-        , style "border-color" borderColor
-        , style "padding" (String.fromInt fieldPadding ++ "px")
-        , style "font-family" "monospace"
+        [ style "position" "absolute"
+        , style "left" "50%"
+        , style "top" "50%"
+        , style "transform" "translate(-50%, -50%)"
         ]
         [ div
-            [ style "width" (String.fromInt (game.width * cellSize) ++ "px")
-            , style "height" (String.fromInt (game.height * cellSize) ++ "px")
+            [ style "width" "fit-content"
+            , style "height" "fit-content"
             , style "border-width" (String.fromFloat borderWidth ++ "px")
             , style "border-style" "solid"
             , style "border-color" borderColor
-            , style "background" fieldBackgroundColor
-            , style "margin-bottom" (String.fromInt fieldPadding ++ "px")
-            , style "position" "relative"
+            , style "padding" (String.fromInt fieldPadding ++ "px")
+            , style "font-family" "monospace"
             ]
-            [ svg
-                [ width (String.fromInt (game.width * cellSize))
-                , height (String.fromInt (game.height * cellSize))
+            [ div
+                [ style "width" (String.fromInt (game.width * cellSize) ++ "px")
+                , style "height" (String.fromInt (game.height * cellSize) ++ "px")
+                , style "border-width" (String.fromFloat borderWidth ++ "px")
+                , style "border-style" "solid"
+                , style "border-color" borderColor
+                , style "background" fieldBackgroundColor
+                , style "margin-bottom" (String.fromInt fieldPadding ++ "px")
+                , style "position" "relative"
                 ]
-                [ case game.food of
-                    Just food ->
-                        fillCell cellBorderWidth foodBorderColor cellSize foodColor food
-
-                    Nothing ->
-                        Svg.text ""
-                , g []
-                    (List.map
-                        (fillCell cellBorderWidth wormBorderColor cellSize wormColor)
-                        (NonEmptyList.toList game.worm)
-                    )
-                ]
-            , if not (game.state == Playing) then
-                div
-                    [ style "width" "100%"
-                    , style "height" "100%"
-                    , style "background" overlayColor
-                    , style "position" "absolute"
-                    , style "top" "0px"
+                [ svg
+                    [ width (String.fromInt (game.width * cellSize))
+                    , height (String.fromInt (game.height * cellSize))
                     ]
-                    [ div
-                        [ style "padding" (String.fromInt fieldPadding ++ "px") ]
-                        [ case game.state of
-                            Title ->
-                                div []
-                                    [ b [ style "font-size" "4em" ] [ text "Wormy" ]
-                                    , p [] [ text "Press the arrow keys to move and the space bar to pause" ]
-                                    ]
+                    [ case game.food of
+                        Just food ->
+                            fillCell cellBorderWidth foodBorderColor cellSize foodColor food
 
-                            Paused ->
-                                div
-                                    []
-                                    [ b [ style "font-size" "4em" ] [ text "Paused" ]
-                                    , p [] [ text "Press the space bar to resume" ]
-                                    ]
-
-                            Over ->
-                                div
-                                    []
-                                    [ b [ style "font-size" "4em" ]
-                                        [ text "Game over!"
-                                        , br [] []
-                                        , div [ style "font-size" "0.5em" ]
-                                            [ text ("Final score: " ++ String.fromInt game.score) ]
-                                        ]
-                                    , p [] [ text "Press the space bar to start again" ]
-                                    ]
-
-                            Won ->
-                                div
-                                    []
-                                    [ b [ style "font-size" "4em" ]
-                                        [ text "You win!"
-                                        , br [] []
-                                        , div [ style "font-size" "0.5em" ]
-                                            [ text ("Final score: " ++ String.fromInt game.score) ]
-                                        ]
-                                    , p [] [ text "Press the space bar to start again" ]
-                                    ]
-
-                            _ ->
-                                text ""
+                        Nothing ->
+                            Svg.text ""
+                    , g []
+                        (List.map
+                            (fillCell cellBorderWidth wormBorderColor cellSize wormColor)
+                            (NonEmptyList.toList game.worm)
+                        )
+                    ]
+                , if not (game.state == Playing) then
+                    div
+                        [ style "width" "100%"
+                        , style "height" "100%"
+                        , style "background" overlayColor
+                        , style "position" "absolute"
+                        , style "top" "0px"
                         ]
-                    ]
+                        [ div
+                            [ style "padding" (String.fromInt fieldPadding ++ "px") ]
+                            [ case game.state of
+                                Title ->
+                                    div []
+                                        [ b [ style "font-size" "4em" ] [ text "Wormy" ]
+                                        , p [] [ text "Press the arrow keys to move and the space bar to pause" ]
+                                        ]
 
-              else
-                text ""
-            ]
-        , div
-            [ style "text-align" "right" ]
-            [ text ("Score: " ++ String.fromInt game.score)
-            , br [] []
-            , text ("Time: " ++ formatDuration game.elapsed)
+                                Paused ->
+                                    div
+                                        []
+                                        [ b [ style "font-size" "4em" ] [ text "Paused" ]
+                                        , p [] [ text "Press the space bar to resume" ]
+                                        ]
+
+                                Over ->
+                                    div
+                                        []
+                                        [ b [ style "font-size" "4em" ]
+                                            [ text "Game over!"
+                                            , br [] []
+                                            , div [ style "font-size" "0.5em" ]
+                                                [ text ("Final score: " ++ String.fromInt game.score) ]
+                                            ]
+                                        , p [] [ text "Press the space bar to start again" ]
+                                        ]
+
+                                Won ->
+                                    div
+                                        []
+                                        [ b [ style "font-size" "4em" ]
+                                            [ text "You win!"
+                                            , br [] []
+                                            , div [ style "font-size" "0.5em" ]
+                                                [ text ("Final score: " ++ String.fromInt game.score) ]
+                                            ]
+                                        , p [] [ text "Press the space bar to start again" ]
+                                        ]
+
+                                _ ->
+                                    text ""
+                            ]
+                        ]
+
+                  else
+                    text ""
+                ]
+            , div
+                [ style "text-align" "right" ]
+                [ text ("Score: " ++ String.fromInt game.score)
+                , br [] []
+                , text ("Time: " ++ formatDuration game.elapsed)
+                ]
             ]
         ]
 
