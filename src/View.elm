@@ -111,73 +111,43 @@ view game =
                     , style "top" "0px"
                     ]
                     [ div
-                        [ style "padding" (String.fromInt fieldPadding ++ "px")
-                        ]
+                        [ style "padding" (String.fromInt fieldPadding ++ "px") ]
                         [ case game.state of
                             Title ->
-                                div
-                                    []
-                                    [ b
-                                        [ style "font-size" "4em"
-                                        ]
-                                        [ text "Wormy" ]
-                                    , p
-                                        []
-                                        [ text "Press the arrow keys to move and the space bar to pause"
-                                        ]
+                                div []
+                                    [ b [ style "font-size" "4em" ] [ text "Wormy" ]
+                                    , p [] [ text "Press the arrow keys to move and the space bar to pause" ]
                                     ]
 
                             Paused ->
                                 div
                                     []
-                                    [ b
-                                        [ style "font-size" "4em"
-                                        ]
-                                        [ text "Paused" ]
-                                    , p
-                                        []
-                                        [ text "Press the space bar to resume"
-                                        ]
+                                    [ b [ style "font-size" "4em" ] [ text "Paused" ]
+                                    , p [] [ text "Press the space bar to resume" ]
                                     ]
 
                             Over ->
                                 div
                                     []
-                                    [ b
-                                        [ style "font-size" "4em"
-                                        ]
+                                    [ b [ style "font-size" "4em" ]
                                         [ text "Game over!"
                                         , br [] []
-                                        , div
-                                            [ style "font-size" "0.5em"
-                                            ]
-                                            [ text ("Final score: " ++ String.fromInt game.score)
-                                            ]
+                                        , div [ style "font-size" "0.5em" ]
+                                            [ text ("Final score: " ++ String.fromInt game.score) ]
                                         ]
-                                    , p
-                                        []
-                                        [ text "Press the space bar to start again"
-                                        ]
+                                    , p [] [ text "Press the space bar to start again" ]
                                     ]
 
                             Won ->
                                 div
                                     []
-                                    [ b
-                                        [ style "font-size" "4em"
-                                        ]
+                                    [ b [ style "font-size" "4em" ]
                                         [ text "You win!"
                                         , br [] []
-                                        , div
-                                            [ style "font-size" "0.5em"
-                                            ]
-                                            [ text ("Final score: " ++ String.fromInt game.score)
-                                            ]
+                                        , div [ style "font-size" "0.5em" ]
+                                            [ text ("Final score: " ++ String.fromInt game.score) ]
                                         ]
-                                    , p
-                                        []
-                                        [ text "Press the space bar to start again"
-                                        ]
+                                    , p [] [ text "Press the space bar to start again" ]
                                     ]
 
                             _ ->
@@ -189,8 +159,7 @@ view game =
                 text ""
             ]
         , div
-            [ style "text-align" "right"
-            ]
+            [ style "text-align" "right" ]
             [ text ("Score: " ++ String.fromInt game.score)
             , br [] []
             , text ("Time: " ++ formatDuration game.elapsed)
@@ -213,10 +182,8 @@ fillCell strokeSize strokeColor size color (Cell cx cy) =
 
 
 formatDuration : Float -> String
-formatDuration duration =
-    round duration
-        |> Time.millisToPosix
-        |> formatPosixDuration
+formatDuration =
+    round >> Time.millisToPosix >> formatPosixDuration
 
 
 formatPosixDuration : Posix -> String
@@ -230,9 +197,4 @@ formatPosixDuration duration =
     in
     minutes
         ++ ":"
-        ++ (if String.length seconds == 1 then
-                "0" ++ seconds
-
-            else
-                seconds
-           )
+        ++ String.padLeft 2 '0' seconds

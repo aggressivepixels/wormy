@@ -29,9 +29,7 @@ main =
 
 init : () -> ( Game, Cmd Msg )
 init _ =
-    ( Game.initial
-    , Game.generateFood NewFoodCellGenerated Game.initial
-    )
+    ( Game.initial, Game.generateFood NewFoodCellGenerated Game.initial )
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
@@ -40,77 +38,52 @@ update msg game =
         ( FramePassed delta, _ ) ->
             let
                 newGame =
-                    game
-                        |> Game.update delta
+                    Game.update delta game
             in
             if Game.shouldGenerateFood newGame then
-                ( newGame
-                , Game.generateFood NewFoodCellGenerated game
-                )
+                ( newGame, Game.generateFood NewFoodCellGenerated game )
 
             else
-                ( newGame
-                , Cmd.none
-                )
+                ( newGame, Cmd.none )
 
         ( MoveRequested direction, _ ) ->
-            ( Game.updateTargetDirection direction game
-            , Cmd.none
-            )
+            ( Game.updateTargetDirection direction game, Cmd.none )
 
         ( ChangeStateRequested, Title ) ->
-            ( Game.changeState Playing game
-            , Cmd.none
-            )
+            ( Game.changeState Playing game, Cmd.none )
 
         ( ChangeStateRequested, Playing ) ->
-            ( Game.changeState Paused game
-            , Cmd.none
-            )
+            ( Game.changeState Paused game, Cmd.none )
 
         ( ChangeStateRequested, Paused ) ->
-            ( Game.changeState Playing game
-            , Cmd.none
-            )
+            ( Game.changeState Playing game, Cmd.none )
 
         ( ChangeStateRequested, Over ) ->
             let
                 newGame =
                     Game.changeState Playing Game.initial
             in
-            ( newGame
-            , Game.generateFood NewFoodCellGenerated newGame
-            )
+            ( newGame, Game.generateFood NewFoodCellGenerated newGame )
 
         ( ChangeStateRequested, Won ) ->
             let
                 newGame =
                     Game.changeState Playing Game.initial
             in
-            ( newGame
-            , Game.generateFood NewFoodCellGenerated newGame
-            )
+            ( newGame, Game.generateFood NewFoodCellGenerated newGame )
 
         ( NewFoodCellGenerated food, _ ) ->
-            if game |> Game.canPlaceFood food then
-                ( Game.placeFood food game
-                , Cmd.none
-                )
+            if Game.canPlaceFood food game then
+                ( Game.placeFood food game, Cmd.none )
 
             else
-                ( game
-                , Game.generateFood NewFoodCellGenerated game
-                )
+                ( game, Game.generateFood NewFoodCellGenerated game )
 
         ( VisibilityChanged Hidden, Playing ) ->
-            ( Game.changeState Paused game
-            , Cmd.none
-            )
+            ( Game.changeState Paused game, Cmd.none )
 
         ( _, _ ) ->
-            ( game
-            , Cmd.none
-            )
+            ( game, Cmd.none )
 
 
 keyDecoder : Decoder Msg
@@ -120,8 +93,8 @@ keyDecoder =
 
 
 keyToMsg : String -> Decoder Msg
-keyToMsg string =
-    case string of
+keyToMsg s =
+    case s of
         "ArrowLeft" ->
             Decode.succeed (MoveRequested Left)
 
@@ -138,7 +111,7 @@ keyToMsg string =
             Decode.succeed ChangeStateRequested
 
         _ ->
-            Decode.fail ("Not interested in " ++ string)
+            Decode.fail ("Not interested in " ++ s)
 
 
 subscriptions : Game -> Sub Msg
