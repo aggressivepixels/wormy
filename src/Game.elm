@@ -26,8 +26,8 @@ cellGenerator width height =
 
 
 generateFood : (Cell -> msg) -> Game -> Cmd msg
-generateFood msg { width, height } =
-    Random.generate msg (cellGenerator width height)
+generateFood toMsg game =
+    Random.generate toMsg (cellGenerator game.width game.height)
 
 
 isCellInsideField : Int -> Int -> Cell -> Bool
@@ -60,9 +60,7 @@ type alias Game =
 
 changeState : State -> Game -> Game
 changeState state game =
-    { game
-        | state = state
-    }
+    { game | state = state }
 
 
 initial : Game
@@ -85,8 +83,7 @@ update : Float -> Game -> Game
 update delta game =
     case game.state of
         Playing ->
-            game
-                |> updateHelper delta
+            updateHelper delta game
 
         _ ->
             game
@@ -95,39 +92,34 @@ update delta game =
 updateHelper : Float -> Game -> Game
 updateHelper delta game =
     let
-        game_ =
-            game
-                |> updateTime delta
+        newGame =
+            updateTime delta game
     in
-    if game_.timer <= 0 then
-        game_
-            |> moveWorm
+    if newGame.timer <= 0 then
+        moveWorm newGame
 
     else
-        game_
+        newGame
 
 
 checkGameOver : Game -> Bool
-checkGameOver { worm, width, height } =
-    List.any
-        ((==) (NonEmptyList.head worm))
-        (NonEmptyList.tail worm)
-        || not
-            (isCellInsideField
-                width
-                height
-                (NonEmptyList.head worm)
-            )
+checkGameOver game =
+    let
+        ( head, tail ) =
+            NonEmptyList.uncons game.worm
+    in
+    List.any ((==) head) tail
+        || not (isCellInsideField game.width game.height head)
 
 
 checkWon : Game -> Bool
-checkWon { worm, width, height } =
-    NonEmptyList.length worm == width * height
+checkWon game =
+    NonEmptyList.length game.worm == game.width * game.height
 
 
 shouldGenerateFood : Game -> Bool
-shouldGenerateFood { food, state } =
-    food == Nothing && state /= Won
+shouldGenerateFood game =
+    game.food == Nothing && game.state /= Won
 
 
 updateTime : Float -> Game -> Game
@@ -142,9 +134,7 @@ updateTargetDirection : Direction -> Game -> Game
 updateTargetDirection direction game =
     case game.state of
         Playing ->
-            { game
-                | targetDirection = direction
-            }
+            { game | targetDirection = direction }
 
         _ ->
             game
@@ -153,18 +143,17 @@ updateTargetDirection direction game =
 moveWorm : Game -> Game
 moveWorm game =
     let
-        game_ =
-            game
-                |> moveWormHelper
+        newGame =
+            moveWormHelper game
     in
-    game_
-        |> (if checkGameOver game_ then
+    newGame
+        |> (if checkGameOver newGame then
                 changeState Over
 
             else
                 identity
            )
-        |> (if checkWon game_ then
+        |> (if checkWon newGame then
                 changeState Won
 
             else
@@ -183,28 +172,27 @@ moveWormHelper game =
                 Nothing ->
                     False
 
-        direction_ =
+        newDirection =
             if Direction.opposite game.direction == game.targetDirection then
                 game.direction
 
             else
                 game.targetDirection
 
-        head_ =
-            Cell.move direction_ (NonEmptyList.head game.worm)
+        newHead =
+            Cell.move newDirection (NonEmptyList.head game.worm)
 
-        worm_ =
+        newWorm =
             if ate then
-                NonEmptyList.cons head_ game.worm
+                NonEmptyList.cons newHead game.worm
 
             else
-                game.worm
-                    |> NonEmptyList.cons head_
+                NonEmptyList.cons newHead game.worm
                     |> NonEmptyList.dropLast
     in
     { game
         | timer = game.timer + game.frameDuration
-        , worm = worm_
+        , worm = newWorm
         , food =
             if ate then
                 Nothing
@@ -217,18 +205,16 @@ moveWormHelper game =
 
             else
                 game.score
-        , direction = direction_
-        , targetDirection = direction_
+        , direction = newDirection
+        , targetDirection = newDirection
     }
 
 
 canPlaceFood : Cell -> Game -> Bool
-canPlaceFood cell { worm } =
-    NonEmptyList.all ((/=) cell) worm
+canPlaceFood cell game =
+    NonEmptyList.all ((/=) cell) game.worm
 
 
 placeFood : Cell -> Game -> Game
 placeFood cell game =
-    { game
-        | food = Just cell
-    }
+    { game | food = Just cell }

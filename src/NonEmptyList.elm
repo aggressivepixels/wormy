@@ -8,6 +8,7 @@ module NonEmptyList exposing
     , length
     , tail
     , toList
+    , uncons
     )
 
 
@@ -23,6 +24,11 @@ from x xs =
 cons : a -> NonEmptyList a -> NonEmptyList a
 cons newX (NonEmptyList x xs) =
     NonEmptyList newX (x :: xs)
+
+
+uncons : NonEmptyList a -> ( a, List a )
+uncons (NonEmptyList x xs) =
+    ( x, xs )
 
 
 head : NonEmptyList a -> a
