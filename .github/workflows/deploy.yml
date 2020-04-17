@@ -1,0 +1,25 @@
+name: Deploy to itch.io
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: yarn --frozen-lockfile
+      - run: yarn build
+
+  deploy:
+    needs: build
+    steps:
+      - run: curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+      - run: unzip butler.zip
+      - run: chmod +x butler
+      - run: ./butler -V
+      - run: ./butler push dist aggressivepixels/wormy:web
