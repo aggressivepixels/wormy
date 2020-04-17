@@ -2,7 +2,7 @@
 
 **Wormy** is a Snake clone built on [Elm](https://elm-lang.com).
 
-Play it online [here](https://aggressivepixels.github.io/wormy).
+Play it online [at itch.io](https://aggressivepixels.itch.io/wormy).
 
 ## License
 
