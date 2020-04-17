@@ -5,7 +5,7 @@ on:
     branches: [master]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,11 +14,6 @@ jobs:
           node-version: 12
       - run: yarn --frozen-lockfile
       - run: yarn build
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - run: curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
       - run: unzip butler.zip
       - run: chmod +x butler
